@@ -141,7 +141,7 @@ void main()
 
 
 	//for (int i = 0; i < h.track_; i++)
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 3; i++)
 	{
 		TrackChunk t;
 		fread(&t, sizeof(t), 1, fp);
@@ -162,14 +162,11 @@ void main()
 		printf("\n");
 #endif
 
-		//continue;
-
-
 		while (1)
 		{
 			MidiStatus midiStatus;
 
-			// デルタタイム ( 可変 めんどい
+			// デルタタイム ( 可変
 			int deltaSize = 0;
 			while (1)
 			{
@@ -180,7 +177,6 @@ void main()
 				}
 				else if (buf[it] == 0xf0 || buf[it] == 0xf7) // 2. SysExイベント
 				{
-					//it++;
 					printf("deltaSize : %d\n", deltaSize);
 					goto SysExEvent;
 				}
@@ -201,51 +197,51 @@ void main()
 			{
 				//printf("--Midi[NoteOff]\n");
 				// 9n kk 00 とも表現できる
-				char channel = buf[it] - 0x80;
+				unsigned char channel = buf[it] - 0x80;
 				printf("チャンネル(%02x)で鳴っている、ノート(%02x)の音を消音。\n", channel, buf[it + 1]);
 				it += 3;
 			}
 			else if (midiStatus == NoteOn) // 9n kk vv (3 byte)
 			{
 				//printf("--Midi[NoteOn]\n");
-				char channel = buf[it] - 0x90;
+				unsigned char channel = buf[it] - 0x90;
 				printf("チャンネル(%02x)で、ノート(%02x)の音を、ベロシティ(%02x)で発音。\n", channel, buf[it + 1], buf[it + 2]);
 				it += 3;
 			}
 			else if (midiStatus == PolyphonicKeyPressure) // An kk vv (3 byte)
 			{
-				//printf("--Midi[PolyphonicKeyPressure]\n");
-				char channel = buf[it] - 0xa0;
+				printf("--Midi[PolyphonicKeyPressure]\n");
+				unsigned char channel = buf[it] - 0xa0;
 				printf("チャンネル(%02x)で、発音中のノート(%02x)の音に対し、ベロシティ(%02x)のプレッシャー情報を与える。\n",
 					channel, buf[it + 1], buf[it + 2]);
 				it += 3;
 			}
 			else if (midiStatus == ControllChange) // Bn cc vv (3 byte or 4 byte) ???
 			{
-				//printf("--Midi[ControllChange]\n");
-				char channel = buf[it] - 0xb0;
+				printf("--Midi[ControllChange]\n");
+				unsigned char channel = buf[it] - 0xb0;
 				printf("チャンネル(%02x)で、コントローラナンバー(%02x)に、値(%02x)を送る。\n", channel, buf[it + 1], buf[it + 2]);
 				it += 3;
 			}
 			else if (midiStatus == ProgramChange) // Cn pp (2 byte)
 			{
-				//printf("--Midi[ProgramChange]\n");
-				char channel = buf[it] - 0xc0;
+				printf("--Midi[ProgramChange]\n");
+				unsigned char channel = buf[it] - 0xc0;
 				printf("チャンネル(%02x)で、プログラム(音色)を(%02x)に変える。\n", channel, buf[it + 1]);
 				it += 2;
 			}
 			else if (midiStatus == ChannelPressure) // Dn vv (2 byte)
 			{
-				//printf("--Midi[ChannelPressure]\n");
-				char channel = buf[it] - 0xd0;
+				printf("--Midi[ChannelPressure]\n");
+				unsigned char channel = buf[it] - 0xd0;
 				printf("チャンネル(%02x)に、プレッシャー情報(%02x)を送信する。\n", channel, buf[it + 1]);
 				// PolyphonicKeyPressure の、チャンネル内全音版
 				it += 2;
 			}
 			else if (midiStatus == PitchBend) // En mm ll (3 byte) little endian!!
 			{
-				//printf("--Midi[PitchBend]\n");
-				char channel = buf[it] - 0xe0;
+				printf("--Midi[PitchBend]\n");
+				unsigned char channel = buf[it] - 0xe0;
 				unsigned short bend = (buf[it + 2] << 8) | buf[it + 1]; // ll mm
 				printf("チャンネル(%02x)に対し、ピッチベンド値(%02x)を送る。\n", channel, bend);
 				it += 3;
